@@ -1,4 +1,4 @@
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Collections;
 
 namespace SQLExample
@@ -11,8 +11,10 @@ namespace SQLExample
 
         const string CONNECTION_STRING = @"Server=LAB-14-00\SQLEXPRESS;" +
                                   @"Database=Rupin;" +
-                                  @"Integrated Security=True;" +
-                                  @"TrustServerCertificate=False;";
+                                  @"Integrated Security=False;" +
+                                  @"User=rupin;" +
+                                  @"Password=rupin;" +
+                                  @"TrustServerCertificate=True;";
 
         [Obsolete]
         static void Main(string[] args)

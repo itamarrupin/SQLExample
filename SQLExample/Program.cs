@@ -1,4 +1,4 @@
-﻿using System.Data.SqlClient;
+using System.Data.SqlClient;
 using System.Collections;
 
 namespace SQLExample
@@ -7,6 +7,7 @@ namespace SQLExample
     {
         const string SQL_SELECT = @"SELECT * FROM dbo.users WHERE active = 1 ORDER BY [grade] ASC";
         const string SQL_UPDATE = @"UPDATE users SET grade = @grade WHERE id = @id;";
+        const string SQL_INSERT = @"INSERT INTO users(name,email,phone) values (@name,@email,@phone)";
 
         const string CONNECTION_STRING = @"Server=LAB-14-00\SQLEXPRESS;" +
                                   @"Database=Rupin;" +
@@ -24,13 +25,65 @@ namespace SQLExample
             Console.WriteLine("==================== USERS (AFTER FACTOR - IN MEMORY) =======================");
             PrintUsers(users);
             Console.WriteLine("==================== UPDATE USERS =======================");
+            Console.WriteLine("Update users in memory...");
             UpdateGrade(users);
+            Console.WriteLine("==================== RELOAD USERS =======================");
+            users = GetUsers();
+            PrintUsers(users);
+            Console.WriteLine("==================== ADD USERS =======================");
+            Console.WriteLine("Adding 10 users to the database...");
+            Console.WriteLine("==================== USERS (INSERT USER) =======================");
+            InsertUsers();
             Console.WriteLine("==================== RELOAD USERS =======================");
             users = GetUsers();
             PrintUsers(users);
 
             Console.WriteLine("press any key");
             Console.ReadLine();
+        }
+
+        private static void InsertUsers()
+        {
+            List<User> users = new List<User>();
+            for (int i = 0; i < 10; i++)
+            {
+                User user = new User()
+                {
+                    name = $"User {i + 1}",
+                    email = "user" + (i + 1) + "@example.com",
+                    phone = "123-456-789" + (i + 1),
+                };
+
+                users.Add(user);
+            }
+
+            // CRUD: (U) - update list of users
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                try
+                {
+                    connection.Open();
+                    foreach (User item in users)
+                    {
+                        SqlCommand cmd = connection.CreateCommand();
+                        cmd.CommandText = SQL_INSERT;
+
+                        cmd.Parameters.AddWithValue("@name", item.name);
+                        cmd.Parameters.AddWithValue("@email", item.email);
+                        cmd.Parameters.AddWithValue("@phone", item.phone);
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected == 0)
+                        {
+                            Console.WriteLine($"Failed to insert user with id: {item.id} ");
+                        }
+                    }
+                    connection.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to insert users, see error: {ex.Message}");
+                }
+            }
         }
 
         private static void UpdateGrade(List<User> users)
